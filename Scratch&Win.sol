@@ -97,6 +97,18 @@ contract ScratchAndWin is Context, Ownable {
     constructor(IERC20 tokenAddress){
        token = tokenAddress;
     }
+    
+    function isContract(address account) internal view returns (bool) {
+        // This method relies on extcodesize, which returns 0 for contracts in
+        // construction, since the code is only stored at the end of the
+        // constructor execution.
+
+        uint256 size;
+        assembly {
+            size := extcodesize(account)
+        }
+        return size > 0;
+    }
 
           ////////////////////
          // Core Functions //
@@ -127,6 +139,7 @@ contract ScratchAndWin is Context, Ownable {
     ///     The msg.sender token balance must be >= ticketPrice.
     function prevalidatePurchase() internal view{
         require(isActive, "Not Active yet");
+        require(!isContract(msg.sender));
         require(token.balanceOf(msg.sender) >= ticketPrice, "Insufficient balance");
         require(token.balanceOf(address(this)) >= (prizes[prizes.length -1] * 10**9), "No sufficient balance in contract");
     }
